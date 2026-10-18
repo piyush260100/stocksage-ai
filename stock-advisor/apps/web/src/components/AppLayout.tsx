@@ -27,6 +27,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "../features/auth/authStore";
 import { useThemeStore } from "../app/themeStore";
+import { useDocumentTitle } from "../app/useDocumentTitle";
 import { BrandLogo } from "./BrandLogo";
 import { GlobalSearch } from "./GlobalSearch";
 import { HelpBot } from "../features/assistant/HelpBot";
@@ -52,6 +53,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuthStore();
   const { mode, toggle } = useThemeStore();
   useAlertWatcher();
+  useDocumentTitle();
 
   const handleLogout = () => {
     logout();

@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /$
+Allow: /login
+Allow: /signup
+# App pages are behind auth and client-rendered; keep crawlers on public entry points.
+Disallow: /dashboard
+Disallow: /portfolio
+Disallow: /watchlist
+Disallow: /recommendations
+Disallow: /predict
+Disallow: /traders
+Disallow: /shadow
+Disallow: /alerts
+Disallow: /stock
+
+Sitemap: https://stocksage.ai/sitemap.xml

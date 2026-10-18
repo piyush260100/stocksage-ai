@@ -5,6 +5,7 @@ import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { motion } from "framer-motion";
 import { BrandLogo } from "../../components/BrandLogo";
 import { useThemeStore } from "../../app/themeStore";
+import { useDocumentTitle } from "../../app/useDocumentTitle";
 
 /** Branded, animated card layout shared by the login and signup screens. */
 export function AuthShell({
@@ -15,6 +16,7 @@ export function AuthShell({
   children: ReactNode;
 }) {
   const { mode, toggle } = useThemeStore();
+  useDocumentTitle();
   return (
     <Box
       sx={(theme) => ({
