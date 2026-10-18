@@ -4,10 +4,11 @@ inclusion: always
 
 # Project structure & conventions
 
-Monorepo using npm workspaces.
+Monorepo using npm workspaces. The project lives at the repository root
+(the repo IS StockSage — there is no nested project folder).
 
 ```
-stock-advisor/
+<repo root>/        # StockSage AI
   packages/
     shared/     # @stock-advisor/shared — all framework-agnostic domain logic
       src/

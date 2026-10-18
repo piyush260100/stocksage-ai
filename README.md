@@ -17,8 +17,10 @@ reuse all the business logic.
 
 ## Structure
 
+The project lives at the repository root (StockSage is the repo itself).
+
 ```
-stock-advisor/
+<repo root>/        # StockSage AI
   packages/
     shared/       # types, ApiClient contract, mock + HTTP clients, all domain logic
   apps/
