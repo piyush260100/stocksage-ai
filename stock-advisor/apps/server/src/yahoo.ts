@@ -24,7 +24,7 @@ export interface YahooCandle {
   price: number;
 }
 
-async function fetchJson(url: string, timeoutMs = 8000): Promise<any> {
+async function fetchJson(url: string, timeoutMs = 5000): Promise<any> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -76,19 +76,26 @@ async function fetchQuote(yahooSymbol: string): Promise<YahooQuote | null> {
 }
 
 /**
- * Fetch quotes for several Yahoo symbols. The chart endpoint is per-symbol, so
- * we fan out with bounded concurrency and skip any that fail individually.
+ * Fetch quotes for several Yahoo symbols with BOUNDED concurrency. The chart
+ * endpoint is per-symbol; firing all ~60 at once trips Yahoo's rate limiting
+ * and makes slow responses pile up (seen as multi-second stalls). Batching
+ * keeps latency predictable and skips any symbol that fails individually.
  */
+const QUOTE_CONCURRENCY = 8;
+
 export async function fetchQuotes(yahooSymbols: string[]): Promise<Map<string, YahooQuote>> {
   const result = new Map<string, YahooQuote>();
   if (yahooSymbols.length === 0) return result;
 
-  const settled = await Promise.allSettled(yahooSymbols.map((s) => fetchQuote(s)));
-  settled.forEach((outcome, i) => {
-    if (outcome.status === "fulfilled" && outcome.value) {
-      result.set(yahooSymbols[i]!, outcome.value);
-    }
-  });
+  for (let i = 0; i < yahooSymbols.length; i += QUOTE_CONCURRENCY) {
+    const batch = yahooSymbols.slice(i, i + QUOTE_CONCURRENCY);
+    const settled = await Promise.allSettled(batch.map((s) => fetchQuote(s)));
+    settled.forEach((outcome, j) => {
+      if (outcome.status === "fulfilled" && outcome.value) {
+        result.set(batch[j]!, outcome.value);
+      }
+    });
+  }
   return result;
 }
 

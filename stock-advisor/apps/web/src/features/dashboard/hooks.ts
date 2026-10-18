@@ -15,15 +15,26 @@ export function useMarketOverview() {
 
   useEffect(() => {
     let unsub = () => {};
+    let received = false;
+    // If no data arrives within 15s, surface an error instead of spinning.
+    const guard = setTimeout(() => {
+      if (!received) setError(new Error("Timed out loading market data. Is the server running?"));
+    }, 15_000);
     try {
       unsub = api.subscribeMarket((overview) => {
+        received = true;
+        clearTimeout(guard);
         setData(overview);
         setError(null);
       });
     } catch (err) {
+      clearTimeout(guard);
       setError(err);
     }
-    return () => unsub();
+    return () => {
+      clearTimeout(guard);
+      unsub();
+    };
   }, [api]);
 
   return {

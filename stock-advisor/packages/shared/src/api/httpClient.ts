@@ -36,23 +36,61 @@ export function createHttpApiClient(baseUrl: string): ApiClient {
     getMarketOverview: (): Promise<MarketOverview> => get("/api/market/overview"),
 
     subscribeMarket(onData: (overview: MarketOverview) => void): () => void {
-      // Prefer SSE for a true push stream; fall back to polling if EventSource
-      // is unavailable (e.g. non-browser environments).
+      let stopped = false;
+      let pollTimer: ReturnType<typeof setInterval> | null = null;
+
+      // Polling fallback used when SSE is unavailable or errors out, so the
+      // dashboard always receives data even if the stream connection fails.
+      const startPolling = () => {
+        if (pollTimer || stopped) return;
+        const tick = () =>
+          void get<MarketOverview>("/api/market/overview")
+            .then((o) => {
+              if (!stopped) onData(o);
+            })
+            .catch(() => {});
+        tick(); // immediate first fetch so the UI isn't stuck loading
+        pollTimer = setInterval(tick, 10_000);
+      };
+
       if (typeof EventSource !== "undefined") {
         const es = new EventSource(`${baseUrl}/api/market/stream`);
+        let gotFrame = false;
+
         es.onmessage = (e) => {
           try {
+            gotFrame = true;
             onData(JSON.parse(e.data) as MarketOverview);
           } catch {
             /* ignore malformed frame */
           }
         };
-        return () => es.close();
+
+        es.onerror = () => {
+          // SSE failed/closed. Close it and fall back to polling so the UI
+          // never hangs on a spinner.
+          es.close();
+          startPolling();
+        };
+
+        // Safety net: if no frame arrives within 6s, start polling too.
+        const safety = setTimeout(() => {
+          if (!gotFrame) startPolling();
+        }, 6000);
+
+        return () => {
+          stopped = true;
+          clearTimeout(safety);
+          es.close();
+          if (pollTimer) clearInterval(pollTimer);
+        };
       }
-      const timer = setInterval(() => {
-        void get<MarketOverview>("/api/market/overview").then(onData).catch(() => {});
-      }, 10_000);
-      return () => clearInterval(timer);
+
+      startPolling();
+      return () => {
+        stopped = true;
+        if (pollTimer) clearInterval(pollTimer);
+      };
     },
     getStock: (symbol: string): Promise<Stock> => get(`/api/stocks/${encodeURIComponent(symbol)}`),
     getStockHistory: (symbol: string, days = 90): Promise<PricePoint[]> =>

@@ -182,6 +182,23 @@ in-app pages behind auth are intentionally not crawled):
 Replace `https://stocksage.ai` with your real domain in the meta tags, sitemap,
 and robots before deploying.
 
+## Kiro steering & MCP
+
+This repo is set up for the Kiro agent:
+
+- **Steering files** (`.kiro/steering/`) provide always-on project context:
+  - `product.md` — what the app is and its non-negotiable principles.
+  - `structure.md` — monorepo layout and the "golden rules" (ApiClient contract,
+    shared domain logic, provider layer, feature-first web).
+  - `tech.md` — stack, commands, environment, and external-data realities.
+  - `mcp-and-tools.md` — how/when to use the configured MCP tools.
+  - `keep-docs-updated.md` — the documentation policy below.
+- **MCP** (`.kiro/settings/mcp.json`) configures a `fetch` server
+  (`mcp-server-fetch`) for clean web-content retrieval during research. It runs
+  via `uvx`, so it requires **uv** (`pip install uv` or the astral.sh installer).
+  The app does not depend on MCP; if `uv` is absent the server simply won't
+  start.
+
 ## Documentation policy
 
 A steering rule (`.kiro/steering/keep-docs-updated.md`) requires this README and
