@@ -1,0 +1,21 @@
+{
+  "name": "stock-advisor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-powered stock recommendation platform (web + mobile)",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "web": "npm run dev --workspace @stock-advisor/web",
+    "web:build": "npm run build --workspace @stock-advisor/web",
+    "web:test": "npm run test --workspace @stock-advisor/web",
+    "server": "npm run dev --workspace @stock-advisor/server",
+    "server:build": "npm run build --workspace @stock-advisor/server",
+    "shared:build": "npm run build --workspace @stock-advisor/shared"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
